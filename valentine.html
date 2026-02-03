@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Be my Valentine?</title>
+  <style>
+    body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:radial-gradient(circle at 10% 20%,#fff0f6,transparent 20%),linear-gradient(135deg,#ffd1e8,#fff6fb);font-family:system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;color:#411025}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.95),white);padding:2.25rem;border-radius:18px;box-shadow:0 12px 40px rgba(198,58,100,0.12);text-align:center;max-width:520px;width:94%;position:relative;overflow:hidden}
+    .hero{width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:1rem;box-shadow:0 6px 20px rgba(198,58,100,0.08)}
+    .top-row{display:flex;align-items:center;gap:0.75rem;justify-content:center}
+    .avatar{width:68px;height:68px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,0.8);box-shadow:0 6px 18px rgba(198,58,100,0.08)}
+    h1{margin:0.6rem 0 0.4rem;font-size:1.5rem;color:#c2185b}
+    p.lead{margin:0;color:#6b2940;opacity:0.9}
+    .buttons{display:flex;gap:1rem;justify-content:center;margin-top:1.2rem;position:relative;height:120px}
+    button{padding:0.6rem 1.2rem;border-radius:12px;border:none;font-weight:700;cursor:pointer;transition:transform .12s ease,box-shadow .12s}
+    #yes{background:linear-gradient(90deg,#ff7aa2,#e91e63);color:white;box-shadow:0 14px 30px rgba(233,30,99,0.18);padding:0.9rem 1.6rem;border-radius:14px;font-size:1rem;display:inline-flex;align-items:center;gap:0.6rem}
+    #yes:active{transform:translateY(1px)}
+    #no{background:#fff;color:#e91e63;border:2px solid #e91e63;position:absolute;padding:0.5rem 0.9rem;border-radius:999px;transition:left .12s ease,top .12s ease}
+    .decor{position:absolute;right:-40px;top:-40px;opacity:0.12;transform:rotate(12deg)}
+    .heart{fill:#ff2d7a}
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.42);visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s}
+    .modal.show{visibility:visible;opacity:1}
+    .modal .box{background:white;padding:1.6rem 1.8rem;border-radius:12px;text-align:center;min-width:220px}
+    .modal button{margin-top:1rem}
+    /* confetti hearts */
+    .confetti{pointer-events:none;position:fixed;left:0;top:0;width:100%;height:100%;overflow:visible}
+    .confetti i{position:absolute;font-style:normal;transform:translateY(0);opacity:0;animation:floatUp 1800ms forwards;will-change:transform,opacity}
+    @keyframes floatUp{0%{transform:translateY(0) scale(0.6);opacity:1}100%{transform:translateY(-420px) translateX(60px) scale(1);opacity:0}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="hero" src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=1200&q=80" alt="love">
+    <div class="top-row">
+      <img class="avatar" src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=200&q=80" alt="pookie teddy">
+      <div>
+        <h1>Aswathy — will you be my Valentine?</h1>
+        <p class="lead">I picked this day just for you — be mine? 🌹</p>
+      </div>
+    </div>
+    <div class="buttons" id="area">
+      <button id="yes">Yes ❤️</button>
+      <button id="no">No</button>
+    </div>
+    <svg class="decor" width="220" height="220" viewBox="0 0 64 64" aria-hidden>
+      <path class="heart" d="M32 58s26-16.6 26-31A13 13 0 0 0 45 14c-5 0-8 4-8 4s-3-4-8-4A13 13 0 0 0 6 27c0 14.4 26 31 26 31z"></path>
+    </svg>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="box">
+      <h2>Yes, Aswathy!</h2>
+      <p>I'm so happy, Aswathy — 💖</p>
+      <button id="close">Close</button>
+    </div>
+  </div>
+
+  <div class="confetti" id="confetti"></div>
+
+  <script>
+    const noBtn = document.getElementById('no');
+    const area = document.getElementById('area');
+    const yesBtn = document.getElementById('yes');
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementById('close');
+
+    function moveNo() {
+      const rect = area.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const yesRect = yesBtn.getBoundingClientRect();
+      const areaLeft = rect.left;
+      const areaTop = rect.top;
+      const maxX = Math.max(0, rect.width - btnRect.width);
+      const maxY = Math.max(0, rect.height - btnRect.height);
+
+      const yesRel = {
+        left: Math.max(0, yesRect.left - areaLeft),
+        top: Math.max(0, yesRect.top - areaTop),
+        right: Math.min(rect.width, yesRect.right - areaLeft),
+        bottom: Math.min(rect.height, yesRect.bottom - areaTop)
+      };
+
+      function intersects(x, y, w, h, r) {
+        return !(x + w < r.left || x > r.right || y + h < r.top || y > r.bottom);
+      }
+
+      let x, y, attempt = 0;
+      do {
+        x = Math.random() * maxX;
+        y = Math.random() * maxY;
+        attempt++;
+        if (attempt > 40) break;
+      } while (intersects(x, y, btnRect.width, btnRect.height, yesRel));
+
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+    }
+
+    noBtn.addEventListener('mouseenter', moveNo);
+    noBtn.addEventListener('click', moveNo);
+    // place No initially so it doesn't start on top of Yes
+    moveNo();
+
+    yesBtn.addEventListener('click', () => {
+      modal.classList.add('show');
+      burstHearts();
+    });
+
+    closeBtn.addEventListener('click', () => {
+      modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('show');
+    });
+
+    // small heart confetti burst
+    function burstHearts(){
+      const confetti = document.getElementById('confetti');
+      for(let i=0;i<18;i++){
+        const el = document.createElement('i');
+        el.textContent = '💖';
+        const left = 40 + (Math.random()*20);
+        el.style.left = left + '%';
+        el.style.top = (60 + Math.random()*20) + '%';
+        el.style.fontSize = (12 + Math.random()*20) + 'px';
+        el.style.opacity = 0;
+        el.style.animationDelay = (Math.random()*300) + 'ms';
+        confetti.appendChild(el);
+        setTimeout(()=> el.remove(), 2200);
+      }
+    }
+  </script>
+</body>
+</html>
